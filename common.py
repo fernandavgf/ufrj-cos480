@@ -8,40 +8,53 @@ paddingCharacter = "#"
 blockSize = 5
 bucketSize = 10            #Tamanho do bucket do hash (em blocos)
 numberOfBuckets = 220      #Quantidade máxima de buckets
-recordSize = 153+1         #153 chars + escape key
+recordSize = 980+1         #153 chars + escape key
 
 
 dicColHeaderType = {
-        "CPF": "INTEGER(11)",
-        "SG_UF": "VARCHAR(2)",
-        "CD_CARGO": "INTEGER(2)",
-        'NR_CANDIDATO': "INTEGER(5)", 
-        'NM_CANDIDATO': "VARCHAR(70)", 
-        'NM_EMAIL': "VARCHAR(43)",
-        'NR_PARTIDO': "INTEGER(2)", 
-        'DT_NASCIMENTO': "DATE", 
-        'CD_GENERO': "INTEGER(1)", 
-        'CD_GRAU_INSTRUCAO': "INTEGER(1)", 
-        'CD_ESTADO_CIVIL': "INTEGER(1)", 
-        'CD_COR_RACA': "INTEGER(2)",
-        'CD_OCUPACAO': "VARCHAR(3)"
+        "AN_BASE": "INTEGER(4)",
+        "NM_GRANDE_AREA_CONHECIMENTO": "VARCHAR(27)",
+        "NM_AREA_CONHECIMENTO": "VARCHAR(42)",
+        'NM_SUBAREA_CONHECIMENTO': "VARCHAR(59)", 
+        'NM_ESPECIALIDADE': "VARCHAR(57)", 
+        'CD_AREA_AVALIACAO': "INTEGER(2)",
+
+        'NM_AREA_AVALIACAO': "VARCHAR(65)", 
+        'CD_ENTIDADE_CAPES': "INTEGER(8)", 
+        'CD_ENTIDADE_EMEC': "INTEGER(5)", 
+        'SG_ENTIDADE_ENSINO': "VARCHAR(20)", 
+        'NM_ENTIDADE_ENSINO': "VARCHAR(86)", 
+        'CS_STATUS_JURIDICO': "VARCHAR(10)",
+
+        'DS_DEPENDENCIA_ADMINISTRATIVA': "VARCHAR(7)",
+        'DS_ORGANIZACAO_ACADEMICA': "VARCHAR(51)", 
+        'NM_REGIAO': "VARCHAR(12)", 
+        'SG_UF_PROGRAMA': "VARCHAR(2)", 
+        'NM_MUNICIPIO_PROGRAMA_IES': "VARCHAR(25)",
+        'CD_PROGRAMA_IES': "VARCHAR(13)",
+
+        'NM_PROGRAMA_IES': "VARCHAR(104)", 
+        'CD_CURSO_PPG': "VARCHAR(13)", 
+        'NM_CURSO': "VARCHAR(110)", 
+        'NM_GRAU': "VARCHAR(22)",
+        'CD_CONCEITO_CURSO': "INTEGER(1)",
+        'AN_INICIO_PREVISTO': "INTEGER(4)", 
+
+        'DS_SITUACAO_CURSO': "VARCHAR(16)", 
+        'DT_SITUACAO_CURSO': "VARCHAR(5)", 
+        'ID_ADD_FOTO_PROGRAMA_IES': "INTEGER(6)",
+        'ID_ADD_FOTO_PROGRAMA': "INTEGER(6)",
 }
 
 #Baseado no dic acima(CPF JOGADO PARA A PRIMEIRA POSICAO)
-maxColSizesList = [11,2,2,5,70,43,2,10,1,1,1,2,3]
+maxColSizesList = [4,27,42,59,57,2,65,8,5,20,86,10,7,51,12,2,25,13,104,13,110,221,4,16,5,6,6]
 
 #Baseado no dic acima(e na ordem da lista acima, com CPF no início)
-colHeadersList = ["CPF", "SG_UF", "CD_CARGO", 'NR_CANDIDATO', 'NM_CANDIDATO', 'NM_EMAIL', 'NR_PARTIDO', 'DT_NASCIMENTO', 'CD_GENERO', 'CD_GRAU_INSTRUCAO', 'CD_ESTADO_CIVIL', 'CD_COR_RACA', 'CD_OCUPACAO']
-
-#Baseado nos indices acima
-relevantColsList = [10, 13, 16, 17, 20, 21, 27, 38, 41, 43, 45, 47, 49]
-
-def isRelevantRow(rowNumber):
-    #
-    return rowNumber in relevantColsList
-
-def fillCPF(cpf):
-    return cpf.zfill(maxColSizesList[0])#tamanho de CPF e fixo
+colHeadersList = ["AN_BASE", "NM_GRANDE_AREA_CONHECIMENTO", "NM_AREA_CONHECIMENTO", 'NM_SUBAREA_CONHECIMENTO', 'NM_ESPECIALIDADE', 'CD_AREA_AVALIACAO',
+                  "NM_AREA_AVALIACAO", "CD_ENTIDADE_CAPES", "CD_ENTIDADE_EMEC", 'SG_ENTIDADE_ENSINO', 'NM_ENTIDADE_ENSINO', 'CS_STATUS_JURIDICO',
+                  "DS_DEPENDENCIA_ADMINISTRATIVA", "DS_ORGANIZACAO_ACADEMICA", "NM_REGIAO", 'SG_UF_PROGRAMA', 'NM_MUNICIPIO_PROGRAMA_IES', 'CD_PROGRAMA_IES',
+                  "NM_PROGRAMA_IES", "CD_CURSO_PPG", "NM_CURSO", 'NM_GRAU', 'CD_CONCEITO_CURSO', 'AN_INICIO_PREVISTO',
+                  "DS_SITUACAO_CURSO", "DT_SITUACAO_CURSO", "ID_ADD_FOTO_PROGRAMA_IES", 'ID_ADD_FOTO_PROGRAMA']
 
 
 def readFromFile(csvFilePath):
@@ -56,12 +69,7 @@ def readFromFile(csvFilePath):
                 finalRow = []
                 
                 for i in range(len(row)):
-                    if isRelevantRow(i):
-                        #Se for a coluna do CPF, coloca o mesmo no inicio da lista
-                        if i == relevantColsList[4]:
-                            finalRow.insert(0, fillCPF(row[i]))
-                        else:
-                            finalRow += [(row[i])]
+                    finalRow += [(row[i])]
                 if finalRow[0] == "":
                     return registros      #chegou numa linha vazia, fim do arquivo
                 registros +=[finalRow]
@@ -101,6 +109,8 @@ def padString(stringToPad, totalSizeOfField):
 
 def padRecords(listOfRecords):
     for i in range(len(listOfRecords)):
-        for j in range(len(listOfRecords[i])):
+        for j in range(len(listOfRecords[i])-1):
+            print(listOfRecords[i][j])
             listOfRecords[i][j] = padString(listOfRecords[i][j], maxColSizesList[j])
+        print(listOfRecords[i])
     return listOfRecords
