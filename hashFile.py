@@ -94,7 +94,6 @@ def createHashBD(csvFilePath):
 
     #Reads the csv file and create the records to be inserted, with fixed length
     valuesToLoad = aux.padRecords(aux.readFromFile(csvFilePath))
-    
     # Delete previous database
     if os.path.exists(dbPath):
         os.remove(dbPath)
@@ -103,17 +102,14 @@ def createHashBD(csvFilePath):
     with open(dbPath, 'wb') as hashFile:
         hashFile.seek((aux.bucketSize * aux.numberOfBuckets * aux.blockSize * (aux.recordSize -1)) - 1)
         hashFile.write(b'\0')
-    
-   
     recordCounter = 0
+    aux.makeHEAD(dbHeaderPath, "Hash", 0)
     #inserimos valor a valor com a função de inserção do Hash
     for row in valuesToLoad:
+        recordCounter += 1
         record = Record(row, False)
         hashInsertRecord(record)
-        recordCounter +=1
-
-    # Create HEAD to File
-    aux.makeHEAD(dbHeaderPath, "Hash", recordCounter)
+        aux.updateHEAD(dbHeaderPath, "Hash", recordCounter)
 
 def hashInsertRecord(record):
     freeBlockIndex = -1
@@ -144,7 +140,6 @@ def hashInsertRecord(record):
                 # Set record to rigth block
                 freeSpaceIndex = currentBlock.firstEmptyRecordIndex
                 currentBlock.recordList[freeSpaceIndex] = record
-        
         # Re-write block to the file
         hashFile.seek(startingOffset + (freeBlockIndex * aux.blockSize * (aux.recordSize - 1)))
         hashFile.write(str(currentBlock).encode("utf-8"))

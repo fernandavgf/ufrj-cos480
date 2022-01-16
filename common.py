@@ -2,6 +2,7 @@ import csv
 import os
 import time
 import datetime
+import fileinput
 
 
 paddingCharacter = "#"
@@ -9,6 +10,7 @@ blockSize = 5
 bucketSize = 10            #Tamanho do bucket do hash (em blocos)
 numberOfBuckets = 220      #Quantidade máxima de buckets
 recordSize = 233+1         #153 chars + escape key
+heapHeadSize = 5           #Tamanho do head do heap(em linhas)
 
 
 dicColHeaderType = {
@@ -68,6 +70,36 @@ def makeHEAD(headPath, headType, numRecords):
         string += key + "-" + value + "|"
     string += "\nNumber of records: " + str(numRecords) + "\n"
     file.write(string)
+    file.close()
+
+def updateHEAD(headPath, headType, numRecords):
+    if os.path.exists(headPath):
+        file = open(headPath, 'r')
+    
+        headContent = file.readlines()
+        file.close()
+        os.remove(headPath)
+        
+        #recria ela com as alteracoes
+        file = open(headPath, 'a')
+        file.write(headContent[0])
+        file.write(headContent[1])
+        file.write("Last modification: " + datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S') + "\n")
+        file.write(headContent[3])
+        file.write("Number of records: " + str(numRecords) + "\n")
+    else:
+        #Doesn't exist, create it
+        makeHEAD(headPath, headType, numRecords)
+    file.close()
+
+def queryHEADrecords(headPath, headSize):
+    #posição de início de leitura dos dados
+    #cursorBegin = startingR
+    with open(headPath, 'r') as file:
+        for i in range(headSize-1):
+            file.readline()
+        return (int(file.readline().split("Number of records: ")[1]))
+
 
 
 def padString(stringToPad, totalSizeOfField):
@@ -81,3 +113,55 @@ def padRecords(listOfRecords):
         for j in range(len(listOfRecords[i])):
             listOfRecords[i][j] = padString(listOfRecords[i][j], maxColSizesList[j])
     return listOfRecords
+
+def cleanRecord(recordString):
+    newRegistry = []
+    offset = 0
+    for i in range(len(maxColSizesList)):
+        newRegistry += [recordString[offset:offset+maxColSizesList[i]].replace(paddingCharacter, "").replace("\n", "")]
+        
+        offset+=maxColSizesList[i]
+    return newRegistry
+
+def deleteLineFromFile(location, filepath):
+    # Open the file
+    for line in fileinput.input(filepath, inplace=1):
+        # Check line number
+        linenum = fileinput.lineno()
+        # If we are in our desired location, append the new record to the current one. Else, just remove the line-ending character
+        if linenum == location+1:
+            continue
+        else:
+            line = line.rstrip()
+            # write line in the output file
+            print(line)
+
+def fetchBlock(filePath, startingRecord):
+    #posicao de inicio de leitura dos dados
+    #TODO
+    #cursorBegin = startingR
+    block = []
+    with open(filePath, 'r') as file:
+        #Pula o HEAD(UPDATE: HEAD is in another cast....file)
+        #for i in range(heapHeadSize):
+        #    file.readline()#HEAD possui tamanho variável, então pulamos a linha inteira
+            #Em termos de BD, seria o análogo à buscar o separador de registros, nesse caso, '\n'
+        
+        #Em seguida, move o ponteiro do arquivo para a posição correta(offset)
+        for i in range(recordSize*startingRecord):
+            c = file.read(1) #vamos de 1 em 1 char para não jogar tudo de uma vez na memória
+        
+        #Após isso, faz um seek no número de blocos até preencher o bloco(ou acabar o arquivo)
+        
+        for i in range(blockSize):
+            record = ""
+            for j in range(recordSize):
+                c = file.read(1)
+                #print(c)
+                if c == "": 
+                    #print("FIM DO ARQUIVO")
+                    return block
+                record+=c
+            #print("Current registry: "+registry)
+            block += [cleanRecord(record)]
+    return block
