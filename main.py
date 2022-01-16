@@ -23,3 +23,13 @@ heapDB.HeapSelectRecord('COD', ['1002', '1005'], betweenTwoValues=True)
 # TOdos os registros com campo não chave igual a X
 heapDB.HeapSelectRecord('SG_ENTIDADE_ENSINO', 'UFMG')
 
+## Função Insert
+
+# Um registro
+heapDB.HeapInsertSingleRecord(['3000', 'UFRJ', 'UNIVERSIDADE FEDERAL DO RIO DE JANEIRO', '91038102022', 'ENGENHARIA DE COMPUTAÇÃO']) 
+
+# Vários registros
+heapDB.HeapInsertMultipleRecord(
+    [['9000', 'UFRJ', 'UNIVERSIDADE FEDERAL DO RIO DE JANEIRO', '91038102022', 'ENGENHARIA DE COMPUTAÇÃO'],
+    ['9200', 'UFRJ', 'UNIVERSIDADE FEDERAL DO RIO DE JANEIRO', '91038102022', 'ENGENHARIA DE COMPUTAÇÃO E INFORMAÇÂO']],
+    checkPrimaryKey=False) 

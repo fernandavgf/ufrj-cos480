@@ -27,7 +27,7 @@ def createHeapBD(csvFilePath):
     registryCounter = 0
     #inserimos valor a valor com a função de inserção da Heap
     for row in valuesToLoad:
-        HeapInsertSingleRecord(row)
+        HeapInsertSingleRecord(row, checkPrimaryKey=False)
         registryCounter +=1
     
     aux.updateHEADFile(dbHeaderPath, "HEAP", registryCounter)
@@ -79,7 +79,6 @@ def HeapSelectRecord(colName, value, singleRecordSelection = False, valueIsArray
         secondColumnIndex = aux.colHeadersList.index(secondColName)
         secondValuePresent = True
         
-    print("2ª Coluna:", secondColName, secondValuePresent)
     print("\nRunning query: ")
     if singleRecordSelection:
         if valueIsArray:
@@ -111,7 +110,7 @@ def HeapSelectRecord(colName, value, singleRecordSelection = False, valueIsArray
                              
         for i in range(len(currentBlock)):
             if (not valueIsArray and ((not secondValuePresent and currentBlock[i][columnIndex] == value) or (secondValuePresent and currentBlock[i][columnIndex]==value and currentBlock[i][secondColumnIndex]==secondValue) ) ) or (valueIsArray and currentBlock[i][columnIndex] in value):
-                if not currentBlock[i][secondColumnIndex]==secondValue: continue
+                if secondColName!="" and not currentBlock[i][secondColumnIndex]==secondValue: continue
                 print("Result found in registry " + str(currentRegistry+i) + "!")
                 results += [currentBlock[i]]
                 if singleRecordSelection:
@@ -119,21 +118,24 @@ def HeapSelectRecord(colName, value, singleRecordSelection = False, valueIsArray
                     break
         #se não é EOF e não encontrou registro, repete operação com outro bloco
         currentRegistry +=aux.blockSize
+    
+    print("End of search.")
+    print("Number of blocks fetched: " + str(numberOfBlocksUsed))
         
     if results == []:
         if valueIsArray:
             print("Não foi encontrado registro com "+colName+ " in (" + values +")")
         else:
             print("Não foi encontrado registro com valor " +colName+ " = " + value)
+        return False
         
     else:
         print("Results found: \n")
         for result in results:
             print(result)
             print("\n")
-        
-    print("End of search.")
-    print("Number of blocks fetched: " + str(numberOfBlocksUsed))
+        return True
+    
 
 
 
@@ -149,10 +151,14 @@ def HeapSelectRecord(colName, value, singleRecordSelection = False, valueIsArray
 
 
 #insere um valor novo na Heap(ou seja, no final dela)
-def HeapInsertSingleRecord(listOfValues):
+def HeapInsertSingleRecord(listOfValues, checkPrimaryKey=True):
     if len(listOfValues) != len(aux.maxColSizesList):
         print("Erro: lista de valores recebidos não tem a mesma quantidade de campos da relação")
         return
+    if checkPrimaryKey and not HeapSelectRecord('COD', aux.fillCod(listOfValues[0]), singleRecordSelection=True)==False:
+        print(f"Não foi possível adicionar, pois já existe o código {listOfValues[0]}.")
+        return
+    
     with open(dbPath, 'a') as file:
         #insere o CPF com seu proprio padding
         file.write(aux.fillCod(listOfValues[0]))
@@ -162,6 +168,12 @@ def HeapInsertSingleRecord(listOfValues):
         #por fim pulamos uma linha para o próximo registro
         file.write("\n")
     aux.updateHEADFile(dbHeaderPath, "Heap", aux.getNumRegistries(dbHeaderPath, aux.heapHeadSize)+1)
+    print("Registro inserido com sucesso.")
+
+def HeapInsertMultipleRecord(listOfRecords, checkPrimaryKey=True):
+    for record in listOfRecords:
+        HeapInsertSingleRecord(record, checkPrimaryKey)
+    print("Todos os registros foram inseridos.")
 
 
 def HeapMassInsertCSV(csvFilePath):
