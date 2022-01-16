@@ -8,53 +8,22 @@ paddingCharacter = "#"
 blockSize = 5
 bucketSize = 10            #Tamanho do bucket do hash (em blocos)
 numberOfBuckets = 220      #Quantidade máxima de buckets
-recordSize = 980+1         #153 chars + escape key
+recordSize = 233+1         #153 chars + escape key
 
 
 dicColHeaderType = {
-        "AN_BASE": "INTEGER(4)",
-        "NM_GRANDE_AREA_CONHECIMENTO": "VARCHAR(27)",
-        "NM_AREA_CONHECIMENTO": "VARCHAR(42)",
-        'NM_SUBAREA_CONHECIMENTO': "VARCHAR(59)", 
-        'NM_ESPECIALIDADE': "VARCHAR(57)", 
-        'CD_AREA_AVALIACAO': "INTEGER(2)",
-
-        'NM_AREA_AVALIACAO': "VARCHAR(65)", 
-        'CD_ENTIDADE_CAPES': "INTEGER(8)", 
-        'CD_ENTIDADE_EMEC': "INTEGER(5)", 
+        "COD": "INTEGER(4)",
         'SG_ENTIDADE_ENSINO': "VARCHAR(20)", 
         'NM_ENTIDADE_ENSINO': "VARCHAR(86)", 
-        'CS_STATUS_JURIDICO': "VARCHAR(10)",
-
-        'DS_DEPENDENCIA_ADMINISTRATIVA': "VARCHAR(7)",
-        'DS_ORGANIZACAO_ACADEMICA': "VARCHAR(51)", 
-        'NM_REGIAO': "VARCHAR(12)", 
-        'SG_UF_PROGRAMA': "VARCHAR(2)", 
-        'NM_MUNICIPIO_PROGRAMA_IES': "VARCHAR(25)",
-        'CD_PROGRAMA_IES': "VARCHAR(13)",
-
-        'NM_PROGRAMA_IES': "VARCHAR(104)", 
         'CD_CURSO_PPG': "VARCHAR(13)", 
         'NM_CURSO': "VARCHAR(110)", 
-        'NM_GRAU': "VARCHAR(22)",
-        'CD_CONCEITO_CURSO': "INTEGER(1)",
-        'AN_INICIO_PREVISTO': "INTEGER(4)", 
-
-        'DS_SITUACAO_CURSO': "VARCHAR(16)", 
-        'DT_SITUACAO_CURSO': "VARCHAR(5)", 
-        'ID_ADD_FOTO_PROGRAMA_IES': "INTEGER(6)",
-        'ID_ADD_FOTO_PROGRAMA': "INTEGER(6)",
 }
 
 #Baseado no dic acima(CPF JOGADO PARA A PRIMEIRA POSICAO)
-maxColSizesList = [4,27,42,59,57,2,65,8,5,20,86,10,7,51,12,2,25,13,104,13,110,221,4,16,5,6,6]
+maxColSizesList = [4,20,86,13,110]
 
 #Baseado no dic acima(e na ordem da lista acima, com CPF no início)
-colHeadersList = ["AN_BASE", "NM_GRANDE_AREA_CONHECIMENTO", "NM_AREA_CONHECIMENTO", 'NM_SUBAREA_CONHECIMENTO', 'NM_ESPECIALIDADE', 'CD_AREA_AVALIACAO',
-                  "NM_AREA_AVALIACAO", "CD_ENTIDADE_CAPES", "CD_ENTIDADE_EMEC", 'SG_ENTIDADE_ENSINO', 'NM_ENTIDADE_ENSINO', 'CS_STATUS_JURIDICO',
-                  "DS_DEPENDENCIA_ADMINISTRATIVA", "DS_ORGANIZACAO_ACADEMICA", "NM_REGIAO", 'SG_UF_PROGRAMA', 'NM_MUNICIPIO_PROGRAMA_IES', 'CD_PROGRAMA_IES',
-                  "NM_PROGRAMA_IES", "CD_CURSO_PPG", "NM_CURSO", 'NM_GRAU', 'CD_CONCEITO_CURSO', 'AN_INICIO_PREVISTO',
-                  "DS_SITUACAO_CURSO", "DT_SITUACAO_CURSO", "ID_ADD_FOTO_PROGRAMA_IES", 'ID_ADD_FOTO_PROGRAMA']
+colHeadersList = ["COD", 'SG_ENTIDADE_ENSINO', 'NM_ENTIDADE_ENSINO', "CD_CURSO_PPG", "NM_CURSO"]
 
 
 def readFromFile(csvFilePath):

@@ -4,102 +4,36 @@ import os
 dbPath = "data.db"
 dbHeaderPath = "data.h"
 
-
 class Record:
 
     def __init__(self, listOfValues, dataInBytes):
         if (not dataInBytes):
-            self.anBase                              = listOfValues[0]
-            self.nmGrandeAreaConhecimento            = listOfValues[1]
-            self.nmAreaConhecimento                  = listOfValues[2]
-            self.nmSubAreaConhecimento               = listOfValues[3]
-            self.nmEspecialidade                     = listOfValues[4]
-            self.cdAreaAvaliacao                     = listOfValues[5]
-
-            self.nmAreaAvaliacao                     = listOfValues[6]
-            self.cdEntidadeCapes                     = listOfValues[7]
-            self.cdEntidadeEmec                      = listOfValues[8]
-            self.sgEntidadeEnsino                    = listOfValues[9]
-            self.nmEntidadeEnsino                    = listOfValues[10]
-            self.csStatusJuridico                    = listOfValues[11]
-
-            self.dsDependenciaAdministrativa         = listOfValues[12]
-            self.dsOrganizacaoAcademica              = listOfValues[13]
-            self.nmRegiao                            = listOfValues[14]
-            self.sgUfPrograma                        = listOfValues[15]
-            self.nmMunicipioProgramaIes              = listOfValues[16]
-            self.cdProgramaIes                       = listOfValues[17]
-
-            self.nmProgramaIes                       = listOfValues[18]
-            self.cdCursoPpg                          = listOfValues[19]
-            self.nmCurso                             = listOfValues[20]
-            self.nmGrau                              = listOfValues[21]
-            self.cdConceitoCurso                     = listOfValues[22]
-            self.anInicioPrevisto                    = listOfValues[23]
-            
-            self.dsSituacaoCurso                     = listOfValues[24]
-            self.dtSituacaoCurso                     = listOfValues[25]
-            self.idAddFotoProgramaIes                = listOfValues[26]
-            self.idAddFotoPrograma                   = listOfValues[27]
+            self.cod                                 = listOfValues[0]
+            self.sgEntidadeEnsino                    = listOfValues[1]
+            self.nmEntidadeEnsino                    = listOfValues[2]
+            self.cdCursoPpg                          = listOfValues[3]
+            self.nmCurso                             = listOfValues[4]
         else:
             listOfValues = listOfValues.decode("utf-8")
-            self.anBase                              = listOfValues[0:4]
-            self.nmGrandeAreaConhecimento            = listOfValues[4:31]
-            self.nmAreaConhecimento                  = listOfValues[31:73]
-            self.nmSubAreaConhecimento               = listOfValues[73:132]
-            self.nmEspecialidade                     = listOfValues[132:189]
-            self.cdAreaAvaliacao                     = listOfValues[189:191]
-
-            self.nmAreaAvaliacao                     = listOfValues[191:256]
-            self.cdEntidadeCapes                     = listOfValues[256:264]
-            self.cdEntidadeEmec                      = listOfValues[264:269]
-            self.sgEntidadeEnsino                    = listOfValues[269:289]
-            self.nmEntidadeEnsino                    = listOfValues[289:375]
-            self.csStatusJuridico                    = listOfValues[375:385]
-
-            self.dsDependenciaAdministrativa         = listOfValues[385:392]
-            self.dsOrganizacaoAcademica              = listOfValues[392:443]
-            self.nmRegiao                            = listOfValues[443:455]
-            self.sgUfPrograma                        = listOfValues[455:457]
-            self.nmMunicipioProgramaIes              = listOfValues[457:482]
-            self.cdProgramaIes                       = listOfValues[482:495]
-
-            self.nmProgramaIes                       = listOfValues[495:599]
-            self.cdCursoPpg                          = listOfValues[599:612]
-            self.nmCurso                             = listOfValues[612:722]
-            self.nmGrau                              = listOfValues[722:744]
-            self.cdConceitoCurso                     = listOfValues[744:745]
-            self.anInicioPrevisto                    = listOfValues[745:749]
-            
-            self.dsSituacaoCurso                     = listOfValues[749:765]
-            self.dtSituacaoCurso                     = listOfValues[765:770]
-            self.idAddFotoProgramaIes                = listOfValues[770:776]
-            self.idAddFotoPrograma                   = listOfValues[776:782]
+            self.cod                                 = listOfValues[0:4]
+            self.sgEntidadeEnsino                    = listOfValues[4:24]
+            self.nmEntidadeEnsino                    = listOfValues[24:110]
+            self.cdCursoPpg                          = listOfValues[110:123]
+            self.nmCurso                             = listOfValues[123:233]
 
         self.sizeInBytes = len(str(self))
     
     def __str__(self):
-        return self.docNumber + self.state + self.jobType + self.candidateNumber + self.candidateName + self.candidateEmail + self.partyNumber + self.birthDate + self.gender + self.instructionLevel + self.maritalStatus + self.colorRace + self.ocupation
+        return self.cod + self.sgEntidadeEnsino + self.nmEntidadeEnsino + self.cdCursoPpg + self.nmCurso
 
     def Clear(self):
-        self.docNumber        = '\x00' * 11
-        self.state            = '\x00' * 2
-        self.jobType          = '\x00' * 2
-        self.candidateNumber  = '\x00' * 5
-        self.candidateName    = '\x00' * 70
-        self.candidateEmail   = '\x00' * 43
-        self.partyNumber      = '\x00' * 2
-        self.birthDate        = '\x00' * 10
-        self.gender           = '\x00' * 1
-        self.instructionLevel = '\x00' * 1
-        self.maritalStatus    = '\x00' * 1
-        self.colorRace        = '\x00' * 2
-        self.ocupation        = '\x00' * 3
+        self.cod                 = '\x00' * 4
+        self.sgEntidadeEnsino    = '\x00' * 20
+        self.nmEntidadeEnsino    = '\x00' * 86
+        self.cdCursoPpg          = '\x00' * 13
+        self.nmCurso             = '\x00' * 110
 
         self.sizeInBytes = len(str(self))
-
-
-
 class Block:
 
     def __init__(self, recordBytes):
@@ -120,7 +54,7 @@ class Block:
     def __FirstEmptyRecordIndex(self):
         for i in range(len(self.recordList)):
             try:
-                if (self.recordList[i].docNumber.index('\x00') >= 0):
+                if (self.recordList[i].cod.index('\x00') >= 0):
                     return i
             except:
                 pass
@@ -132,8 +66,6 @@ class Block:
             str_block += str(record)
         
         return str_block
-
-
 class Bucket:
     def __init__(self, hashFile, startOffset):
         self.blocksList = []
@@ -147,7 +79,6 @@ class Bucket:
                 return i
         
         return -1
-
 
 def calculateHashKey(key):
     return int(key)
@@ -164,7 +95,7 @@ def hashInsertRecord(record):
     freeSpaceIndex = -1
 
     #calculate hash key and address
-    hashKey     = calculateHashKey(record.docNumber)
+    hashKey     = calculateHashKey(record.cod)
     hashAddress = calculateHashAddress(hashKey)
 
     # Init the start offset
@@ -192,7 +123,6 @@ def hashInsertRecord(record):
         # Re-write block to the file
         hashFile.seek(startingOffset + (freeBlockIndex * aux.blockSize * (aux.recordSize - 1)))
         hashFile.write(str(currentBlock).encode("utf-8"))
-     
 
 def createHashBD(csvFilePath):
 
@@ -208,13 +138,61 @@ def createHashBD(csvFilePath):
         hashFile.seek((aux.bucketSize * aux.numberOfBuckets * aux.blockSize * (aux.recordSize -1)) - 1)
         hashFile.write(b'\0')
     
-    # Create HEAD to File
-    aux.makeHEAD(dbHeaderPath, "Hash", 0)
-    
+   
     recordCounter = 0
     #inserimos valor a valor com a função de inserção do Hash
     for row in valuesToLoad:
         record = Record(row, False)
         hashInsertRecord(record)
         recordCounter +=1
-    print(recordCounter)
+
+    # Create HEAD to File
+    aux.makeHEAD(dbHeaderPath, "Hash", recordCounter)
+
+
+def hashSelectRecord(searchKeys):
+    recordList = []
+    for searchKey in searchKeys:
+        freeBlockIndex = -1
+        blocksVisitedCount = 0
+        #calculate hash key and address
+        hashKey     = calculateHashKey(searchKey)
+        hashAddress = calculateHashAddress(hashKey)
+        # Init the start offset
+        startingOffset = hashAddress * aux.bucketSize * aux.blockSize * (aux.recordSize - 1)
+
+        # Place the record the first block with enough space starting from the file
+        with open(dbPath, 'r+b') as hashFile:
+            while freeBlockIndex == -1:
+                # Load the bucket
+                currentBucket = Bucket(hashFile, startingOffset)
+                freeBlockIndex = currentBucket.firstBlockWithEmptyRecordIndex
+                foundRecord = False
+                # Search for the key in the records in the bucket
+                for block in currentBucket.blocksList:
+                    blocksVisitedCount += 1
+                    for record in block.recordList:
+                        if (int(record.cod) == int(searchKey)):
+                            print("Found!")
+                            recordList += [record]
+                            foundRecord = True
+                            print("Blocks visited for key {}: {}".format(searchKey, blocksVisitedCount))
+                            if (freeBlockIndex == -1):
+                                freeBlockIndex = 0
+                            break
+                    
+                    if (foundRecord):
+                        break
+
+                if (not foundRecord):
+                    # if record was not found and the bucket is full, it may have occured overflow, so we search in the next bucket
+                    if (freeBlockIndex == -1):
+                        startingOffset += aux.bucketSize * aux.blockSize * (aux.recordSize - 1)
+                        pass
+                    # else, print an error and continue
+                    else:
+                        print("Record {} not found".format(searchKey))
+                        print("Blocks visited for key {}: {}".format(searchKey, blocksVisitedCount))
+                        pass
+
+    return recordList
