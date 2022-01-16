@@ -70,16 +70,18 @@ def makeHEAD(headPath, headType, numRecords):
     file.write(string)
 
 
-def padString(stringToPad, totalSizeOfField):
+def padString(stringToPad, totalSizeOfField, variablePadding=False):
     tmp = stringToPad
+    if variablePadding:
+        return tmp + paddingCharacter
     for i in range (totalSizeOfField - len(stringToPad)):
         tmp+=paddingCharacter
     return tmp        
 
-def padRecords(listOfRecords):
+def padRecords(listOfRecords, variablePadding=False):
     for i in range(len(listOfRecords)):
         for j in range(len(listOfRecords[i])):
-            listOfRecords[i][j] = padString(listOfRecords[i][j], maxColSizesList[j])
+            listOfRecords[i][j] = padString(listOfRecords[i][j], maxColSizesList[j], variablePadding)
     return listOfRecords
 
 # Heap
@@ -127,7 +129,7 @@ def cleanRecord(recordString):
     return newRecord
 
 #StartingRecord = index do registro inicial a ser buscado (0-based)
-def fetchBlock(DBFilePath, startingRecord):
+def fetchBlock(DBFilePath, startingRecord, variableHeap=False):
     #posicao de inicio de leitura dos dados
     #TODO
     #cursorBegin = startingR
@@ -139,22 +141,32 @@ def fetchBlock(DBFilePath, startingRecord):
             #Em termos de BD, seria o análogo à buscar o separador de registros, nesse caso, '\n'
         
         #Em seguida, move o ponteiro do arquivo para a posição correta(offset)
-        for i in range(recordSize*startingRecord):
-            c = file.read(1) #vamos de 1 em 1 char para não jogar tudo de uma vez na memória
+        if variableHeap:
+            for i in range(startingRecord):
+                c = file.readline()
+        else:
+            for i in range(recordSize*startingRecord):
+                c = file.read(1) #vamos de 1 em 1 char para não jogar tudo de uma vez na memória
         
-        #Após isso, faz um seek no número de blocos até preencher o bloco(ou acabar o arquivo)
-        
-        for i in range(blockSize):
-            record = ""
-            for j in range(recordSize):
-                c = file.read(1)
-                #print(c)
-                if c == "": 
-                    #print("FIM DO ARQUIVO")
-                    return block
-                record+=c
-            #print("Current record: "+record)
-            block += [cleanRecord(record)]
+        #Após isso, faz um seek no número de blocos até preencher o bloco(ou acabar o arquivo)        
+        if variableHeap:
+            for i in range(blockSize):
+                record = file.readline()
+                if record == "": return block
+                record = record.rstrip()
+                block += [record.split(paddingCharacter)]
+        else:
+            for i in range(blockSize):
+                record = ""
+                for j in range(recordSize):
+                    c = file.read(1)
+                    #print(c)
+                    if c == "": 
+                        #print("FIM DO ARQUIVO")
+                        return block
+                    record+=c
+                #print("Current record: "+record)
+                block += [cleanRecord(record)]
     return block
 
 def deleteLineFromFile(location, filepath):
