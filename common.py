@@ -113,13 +113,13 @@ def padRecords(listOfRecords):
     return listOfRecords
 
 def cleanRecord(recordString):
-    newRegistry = []
+    newRecord = []
     offset = 0
     for i in range(len(maxColSizesList)):
-        newRegistry += [recordString[offset:offset+maxColSizesList[i]].replace(paddingCharacter, "").replace("\n", "")]
+        newRecord += [recordString[offset:offset+maxColSizesList[i]].replace(paddingCharacter, "").replace("\n", "")]
         
         offset+=maxColSizesList[i]
-    return newRegistry
+    return newRecord
 
 def deleteLineFromFile(location, filepath):
     # Open the file

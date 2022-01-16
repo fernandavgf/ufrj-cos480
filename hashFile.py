@@ -109,10 +109,10 @@ def createHashBD(csvFilePath):
     for row in valuesToLoad:
         recordCounter += 1
         record = Record(row, False)
-        hashInsertRecord(record)
+        hashInsertRecordSingle(record)
     aux.updateHEAD(dbHeaderPath, "Hash", recordCounter)
 
-def hashInsertRecord(record):
+def hashInsertRecordSingle(record):
     freeBlockIndex = -1
     freeSpaceIndex = -1
     
@@ -145,7 +145,7 @@ def hashInsertRecord(record):
         hashFile.seek(startingOffset + (freeBlockIndex * aux.blockSize * (aux.recordSize - 1)))
         hashFile.write(str(currentBlock).encode("utf-8"))
 
-def hashDeleteRecord(searchKeys):
+def hashDeleteRecordById(searchKeys):
     for searchKey in searchKeys:
         freeBlockIndex = -1
         blocksVisitedCount = 0
@@ -204,6 +204,8 @@ def hashSelectId(searchKeys):
         hashAddress = calculateHashAddress(hashKey)
         # Init the start offset
         startingOffset = hashAddress * aux.bucketSize * aux.blockSize * (aux.recordSize - 1)
+        print("\nRunning query: ")
+        print("\nSELECT * FROM TABLE WHERE COD in " + str(searchKeys) + ";\n\n")
 
         # Place the record the first block with enough space starting from the file
         with open(dbPath, 'r+b') as hashFile:
@@ -217,7 +219,6 @@ def hashSelectId(searchKeys):
                     blocksVisitedCount += 1
                     for record in block.recordList:
                         if (record.cod == searchKey):
-                            print(record)
                             recordList += [record]
                             foundRecord = True
                             print("Blocks visited for key {}: {}".format(searchKey, blocksVisitedCount))
@@ -226,6 +227,7 @@ def hashSelectId(searchKeys):
                             break
                     
                     if (foundRecord):
+                        print(record)
                         break
 
                 if (not foundRecord):
@@ -241,11 +243,10 @@ def hashSelectId(searchKeys):
 
     return recordList
 
-def hashSelectRecord(colName, value, singleRecordSelection = False, valueIsArray = False, secondColName = "", secondValue = ""):
+def hashSelectColumns(colName, value, singleRecordSelection = False, valueIsArray = False, secondColName = "", secondValue = "", idResult = []):
     blocksScanned = 0 #conta o número de vezes que "acessamos a memória do disco"
     recordFound = False
     endOfFile = False
-    
     values = ""
     if valueIsArray:
         for val in value:
@@ -269,7 +270,7 @@ def hashSelectRecord(colName, value, singleRecordSelection = False, valueIsArray
     print("\nRunning query: ")
     if singleRecordSelection:
         if valueIsArray:
-            print("\nSELECT * FROM TABLE WHERE " + colName + " in (" + values + ") LIMIT 1;\n\n")
+            print("\nSELECT * FROM TABLE WHERE " + colName + " IN (" + values + ") LIMIT 1;\n\n")
         else:
             if secondValuePresent:
                 print("\nSELECT * FROM TABLE WHERE " + colName + " = " + value + " AND " + secondColName + "=" + secondValue + " LIMIT 1;\n\n")
@@ -277,7 +278,7 @@ def hashSelectRecord(colName, value, singleRecordSelection = False, valueIsArray
                 print("\nSELECT * FROM TABLE WHERE " + colName + " = " + value + " LIMIT 1;\n\n")
     else:
         if valueIsArray:
-            print("\nSELECT * FROM TABLE WHERE " + colName + " in (" + values + ");\n\n")
+            print("\nSELECT * FROM TABLE WHERE " + colName + " IN (" + values + ");\n\n")
         else:
             if secondValuePresent:
                 print("\nSELECT * FROM TABLE WHERE " + colName + " = " + value + " AND " + secondColName + "=" + secondValue + ";\n\n")
@@ -292,13 +293,10 @@ def hashSelectRecord(colName, value, singleRecordSelection = False, valueIsArray
             endOfFile = True
             break
         blocksScanned +=1
-        #print(currentBlock)
-        #print("-----------------------------------------------------------------")
         for i in range(len(currentBlock)):
-            #print(str(currentBlock[i][columnIndex]))
             if (not valueIsArray and ((not secondValuePresent and currentBlock[i][columnIndex] == value) or (secondValuePresent and currentBlock[i][columnIndex]==value and currentBlock[i][secondColumnIndex]==secondValue) ) ) or (valueIsArray and currentBlock[i][columnIndex] in value):
-                print("Result found in record " + str(customRecord+i) + "!")
                 results += [currentBlock[i]]
+                idResult += [currentBlock[i][0]]
                 if singleRecordSelection:
                     recordFound = True
                     break
@@ -314,9 +312,33 @@ def hashSelectRecord(colName, value, singleRecordSelection = False, valueIsArray
         print("Results found: \n")
         for result in results:
             print(result)
-            print("\n")
-        
+
+    print("\n")
     print("End of search.")
     print("Number of blocks fetched: " + str(blocksScanned))
-    return results
+    return idResult
 
+def hashSelectRecord(input1, input2 = "SINGLE", singleRecordSelection = False, valueIsArray = False, secondColName = "", secondValue = "", betweenTwoValues = False):
+    if(str(input2) == "SINGLE"):
+        if(betweenTwoValues == False):
+            hashSelectId(input1)
+        else:
+            for i in range(int(input1[0]), int(input1[1])):
+                values = []
+                values.append(str(i))
+                hashSelectId(values)
+    else:
+        hashSelectColumns(input1, input2, singleRecordSelection, valueIsArray, secondColName, secondValue)
+
+def hashInsertRecord(records):
+    records = aux.padRecords(records)
+    for i in range(len(records)):
+        valueToInsert = Record(records[i], False)
+        hashInsertRecordSingle(valueToInsert)
+
+def hashDeleteRecord(input1, input2 = "SINGLE"):
+    if(input2 == "SINGLE"):
+        hashDeleteRecordById(input1)
+    else:
+        listToDelete = hashSelectColumns(input1, input2)
+        hashDeleteRecord(listToDelete)
