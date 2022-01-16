@@ -1,4 +1,5 @@
 import common as aux
+import codecs
 import os
 
 dbPath = "data.db"
@@ -109,7 +110,7 @@ def createHashBD(csvFilePath):
         recordCounter += 1
         record = Record(row, False)
         hashInsertRecord(record)
-        aux.updateHEAD(dbHeaderPath, "Hash", recordCounter)
+    aux.updateHEAD(dbHeaderPath, "Hash", recordCounter)
 
 def hashInsertRecord(record):
     freeBlockIndex = -1
@@ -193,7 +194,7 @@ def hashDeleteRecord(searchKeys):
                         print("Blocks visited for key {}: {}".format(searchKey, blocksVisitedCount))
                         pass
 
-def hashSelectRecord(searchKeys):
+def hashSelectId(searchKeys):
     recordList = []
     for searchKey in searchKeys:
         freeBlockIndex = -1
@@ -239,3 +240,83 @@ def hashSelectRecord(searchKeys):
                         pass
 
     return recordList
+
+def hashSelectRecord(colName, value, singleRecordSelection = False, valueIsArray = False, secondColName = "", secondValue = ""):
+    blocksScanned = 0 #conta o número de vezes que "acessamos a memória do disco"
+    recordFound = False
+    endOfFile = False
+    
+    values = ""
+    if valueIsArray:
+        for val in value:
+            values+= val + ", "
+        values = values[:len(values)-2] #tira ultima ', '
+    
+    if colName not in aux.colHeadersList:
+        print("Error: Column name not found in relation.")
+        return
+    columnIndex = aux.colHeadersList.index(colName) #pega o indice referente àquela coluna
+    secondValuePresent = False
+
+    secondColumnIndex = -1
+    if secondColName != "" and secondValue != "":
+        if secondColName not in aux.colHeadersList:
+            print("Error: Second column name not found in relation")
+            return
+        secondColumnIndex = aux.colHeadersList.index(secondColName)
+        secondValuePresent = True
+
+    print("\nRunning query: ")
+    if singleRecordSelection:
+        if valueIsArray:
+            print("\nSELECT * FROM TABLE WHERE " + colName + " in (" + values + ") LIMIT 1;\n\n")
+        else:
+            if secondValuePresent:
+                print("\nSELECT * FROM TABLE WHERE " + colName + " = " + value + " AND " + secondColName + "=" + secondValue + " LIMIT 1;\n\n")
+            else:
+                print("\nSELECT * FROM TABLE WHERE " + colName + " = " + value + " LIMIT 1;\n\n")
+    else:
+        if valueIsArray:
+            print("\nSELECT * FROM TABLE WHERE " + colName + " in (" + values + ");\n\n")
+        else:
+            if secondValuePresent:
+                print("\nSELECT * FROM TABLE WHERE " + colName + " = " + value + " AND " + secondColName + "=" + secondValue + ";\n\n")
+            else:
+                print("\nSELECT * FROM TABLE WHERE " + colName + " = " + value + ";\n\n")
+
+    customRecord= 0 #busca linear, sempre começamos do primeiro
+    results = []
+    while not (recordFound or endOfFile):
+        currentBlock = aux.fetchBlock(dbPath, customRecord)
+        if currentBlock == []:
+            endOfFile = True
+            break
+        blocksScanned +=1
+        #print(currentBlock)
+        #print("-----------------------------------------------------------------")
+        for i in range(len(currentBlock)):
+            #print(str(currentBlock[i][columnIndex]))
+            if (not valueIsArray and ((not secondValuePresent and currentBlock[i][columnIndex] == value) or (secondValuePresent and currentBlock[i][columnIndex]==value and currentBlock[i][secondColumnIndex]==secondValue) ) ) or (valueIsArray and currentBlock[i][columnIndex] in value):
+                print("Result found in record " + str(customRecord+i) + "!")
+                results += [currentBlock[i]]
+                if singleRecordSelection:
+                    recordFound = True
+                    break
+        customRecord +=aux.blockSize
+        
+    if results == []:
+        if valueIsArray:
+            print("Não foi encontrado registro com "+colName+ " in (" + values +")")
+        else:
+            print("Não foi encontrado registro com valor " +colName+ " = " + value)
+        
+    else:
+        print("Results found: \n")
+        for result in results:
+            print(result)
+            print("\n")
+        
+    print("End of search.")
+    print("Number of blocks fetched: " + str(blocksScanned))
+    return results
+

@@ -100,13 +100,11 @@ def queryHEADrecords(headPath, headSize):
             file.readline()
         return (int(file.readline().split("Number of records: ")[1]))
 
-
-
 def padString(stringToPad, totalSizeOfField):
     tmp = stringToPad
     for i in range (totalSizeOfField - len(stringToPad)):
         tmp+=paddingCharacter
-    return tmp        
+    return tmp
 
 def padRecords(listOfRecords):
     for i in range(len(listOfRecords)):
@@ -136,32 +134,19 @@ def deleteLineFromFile(location, filepath):
             # write line in the output file
             print(line)
 
-def fetchBlock(filePath, startingRecord):
-    #posicao de inicio de leitura dos dados
-    #TODO
-    #cursorBegin = startingR
+def fetchBlock(filePath, startingRecord, fetchRerecordSizecordSize = recordSize):
     block = []
-    with open(filePath, 'r') as file:
-        #Pula o HEAD(UPDATE: HEAD is in another cast....file)
-        #for i in range(heapHeadSize):
-        #    file.readline()#HEAD possui tamanho variável, então pulamos a linha inteira
-            #Em termos de BD, seria o análogo à buscar o separador de registros, nesse caso, '\n'
-        
-        #Em seguida, move o ponteiro do arquivo para a posição correta(offset)
-        for i in range(recordSize*startingRecord):
+    with open(filePath, 'r', encoding="utf-8") as file:
+        for i in range((recordSize - 1)*startingRecord):
             c = file.read(1) #vamos de 1 em 1 char para não jogar tudo de uma vez na memória
-        
-        #Após isso, faz um seek no número de blocos até preencher o bloco(ou acabar o arquivo)
         
         for i in range(blockSize):
             record = ""
-            for j in range(recordSize):
+            for j in range(recordSize - 1):
                 c = file.read(1)
-                #print(c)
                 if c == "": 
-                    #print("FIM DO ARQUIVO")
                     return block
                 record+=c
-            #print("Current registry: "+registry)
+#            print(record)
             block += [cleanRecord(record)]
     return block
