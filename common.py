@@ -65,7 +65,6 @@ def makeHEAD(headPath, headType, numRecords):
     string += "\nNumber of records: " + str(numRecords) + "\n"
     file.write(string)
 
-
 def padString(stringToPad, totalSizeOfField, variablePadding=False):
     tmp = stringToPad
     if variablePadding:
@@ -89,7 +88,6 @@ def updateHEAD(headPath, headType, numRecords):
     
         headContent = file.readlines()
 
-        headContent
         file.close()
         os.remove(headPath)
         
@@ -102,8 +100,8 @@ def updateHEAD(headPath, headType, numRecords):
     else:
         makeHEAD(headPath, headType, numRecords)
 
-def queryHEADrecords(DBHeadFilePath, headSize):
-    with open(DBHeadFilePath, 'r') as file:
+def queryHEADrecords(headPath, headSize):
+    with open(headPath, 'r') as file:
         for i in range(headSize-1):
             file.readline()
         return (int(file.readline().split("Number of records: ")[1]))
