@@ -50,10 +50,14 @@ def createHeapBD(csvFilePath):
 #value = desired value
 #SQL Format: Select * from HeapTable WHERE colName = value
 #singleRecordSelection = Retorna o PRIMEIRO registro onde 'colName' = à value se True
-def HeapSelectRecord(colName, value, singleRecordSelection = False, valueIsArray = False, secondColName = "", secondValue = ""):
+def HeapSelectRecord(colName, value, singleRecordSelection = False, valueIsArray = False, secondColName = "", secondValue = "", betweenTwoValues=False):
     numberOfBlocksUsed = 0 #conta o número de vezes que "acessamos a memória do disco"
     registryFound = False
     endOfFile = False
+    
+    if betweenTwoValues:
+        value = [str(x) for x in range(int(value[0]), int(value[1])+1, 1)]
+        valueIsArray = True
     
     values = ""
     if valueIsArray:
@@ -66,7 +70,7 @@ def HeapSelectRecord(colName, value, singleRecordSelection = False, valueIsArray
         return
     columnIndex = aux.colHeadersList.index(colName) #pega o indice referente àquela coluna
     secondValuePresent = False
-
+    
     secondColumnIndex = -1
     if secondColName != "" and secondValue != "":
         if secondColName not in aux.colHeadersList:
@@ -74,7 +78,8 @@ def HeapSelectRecord(colName, value, singleRecordSelection = False, valueIsArray
             return
         secondColumnIndex = aux.colHeadersList.index(secondColName)
         secondValuePresent = True
-
+        
+    print("2ª Coluna:", secondColName, secondValuePresent)
     print("\nRunning query: ")
     if singleRecordSelection:
         if valueIsArray:
@@ -103,9 +108,10 @@ def HeapSelectRecord(colName, value, singleRecordSelection = False, valueIsArray
         
         #mais um bloco varrido
         numberOfBlocksUsed +=1
-                      
+                             
         for i in range(len(currentBlock)):
             if (not valueIsArray and ((not secondValuePresent and currentBlock[i][columnIndex] == value) or (secondValuePresent and currentBlock[i][columnIndex]==value and currentBlock[i][secondColumnIndex]==secondValue) ) ) or (valueIsArray and currentBlock[i][columnIndex] in value):
+                if not currentBlock[i][secondColumnIndex]==secondValue: continue
                 print("Result found in registry " + str(currentRegistry+i) + "!")
                 results += [currentBlock[i]]
                 if singleRecordSelection:
