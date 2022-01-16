@@ -6,10 +6,11 @@ import fileinput
 
 paddingCharacter = "#"
 blockSize = 5
-bucketSize = 10            #Tamanho do bucket do hash (em blocos)
-numberOfBuckets = 220      #Quantidade máxima de buckets
-recordSize = 233+1         #153 chars + escape key
-heapHeadSize = 5           #Tamanho do head do heap(em linhas)
+bucketSize = 10                             #Tamanho do bucket do hash (em blocos)
+numberOfBuckets = 220                       #Quantidade máxima de buckets
+maxColSizesList = [4,20,86,13,110] 
+recordSize = sum(maxColSizesList)+1         #233 chars + escape key
+heapHeadSize = 5                            #Tamanho do head do heap(em linhas)
 
 dicColHeaderType = {
         "COD": "INTEGER(4)",
@@ -19,8 +20,7 @@ dicColHeaderType = {
         'NM_CURSO': "VARCHAR(110)", 
 }
 
-#Baseado no dic acima(CPF JOGADO PARA A PRIMEIRA POSICAO)
-maxColSizesList = [4,20,86,13,110]
+
 
 #Baseado no dic acima(e na ordem da lista acima, com CPF no início)
 colHeadersList = ["COD", 'SG_ENTIDADE_ENSINO', 'NM_ENTIDADE_ENSINO', "CD_CURSO_PPG", "NM_CURSO"]
@@ -164,6 +164,21 @@ def deleteLineFromFile(location, filepath):
         linenum = fileinput.lineno()
         # If we are in our desired location, append the new record to the current one. Else, just remove the line-ending character
         if linenum == location+1:
+            continue
+        else:
+            line = line.rstrip()
+            # write line in the output file
+            print(line)
+
+def markLineDeleted(location, filepath, row = "#" * (recordSize - 1)):
+    # Open the file
+    for line in fileinput.input(filepath, inplace=1):
+        # Check line number
+        linenum = fileinput.lineno()
+        # If we are in our desired location, append the new record to the current one. Else, just remove the line-ending character
+        if linenum == location+1:
+            line = row
+            print(line)
             continue
         else:
             line = line.rstrip()
