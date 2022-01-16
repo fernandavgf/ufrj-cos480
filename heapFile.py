@@ -263,7 +263,7 @@ def HeapDeleteRecord(colName, value, singleRecordDeletion = False, valueIsArray 
                 indexesToDelete+=[currentRegistry+i]
 
                 if singleRecordDeletion:
-                    aux.DeleteLineFromFile(currentRegistry+i, dbPath)
+                    aux.deleteLineFromFile(currentRegistry+i, dbPath)
                     registryFound = True
                     break
         #se não é EOF e não encontrou registro, repete operação com outro bloco

@@ -33,3 +33,11 @@ heapDB.HeapInsertMultipleRecord(
     [['9000', 'UFRJ', 'UNIVERSIDADE FEDERAL DO RIO DE JANEIRO', '91038102022', 'ENGENHARIA DE COMPUTAÇÃO'],
     ['9200', 'UFRJ', 'UNIVERSIDADE FEDERAL DO RIO DE JANEIRO', '91038102022', 'ENGENHARIA DE COMPUTAÇÃO E INFORMAÇÂO']],
     checkPrimaryKey=False) 
+
+## Função Delete
+
+# Um registro
+heapDB.HeapDeleteRecord('COD', '1005', singleRecordDeletion=True)
+
+# Vários registros
+heapDB.HeapDeleteRecord('SG_ENTIDADE_ENSINO', 'UFRJ')
