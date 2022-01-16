@@ -86,8 +86,8 @@ def padRecords(listOfRecords):
 def fillCod(cod):
     return cod.zfill(maxColSizesList[0])
 
-#Updates de HEAD File with new timestamp and current number of Registries
-def updateHEADFile(headPath, headType, numRegistries):
+#Updates de HEAD File with new timestamp and current number of Records
+def updateHEAD(headPath, headType, numRecords):
     if os.path.exists(headPath):
         file = open(headPath, 'r')
     
@@ -103,12 +103,12 @@ def updateHEADFile(headPath, headType, numRegistries):
         file.write(headContent[1])
         file.write("Last modification: " + datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S') + "\n")
         file.write(headContent[3])
-        file.write("Number of records: " + str(numRegistries) + "\n")
+        file.write("Number of records: " + str(numRecords) + "\n")
     else:
         #Doesn't exist, create it
-        makeHEAD(headPath, headType, numRegistries)
+        makeHEAD(headPath, headType, numRecords)
 
-def getNumRegistries(DBHeadFilePath, headSize):
+def queryHEADrecords(DBHeadFilePath, headSize):
     #posição de início de leitura dos dados
     #cursorBegin = startingR
     with open(DBHeadFilePath, 'r') as file:
@@ -116,18 +116,18 @@ def getNumRegistries(DBHeadFilePath, headSize):
             file.readline()
         return (int(file.readline().split("Number of records: ")[1]))
 
-def cleanRegistry(registryString):
-    newRegistry = []
+def cleanRecord(recordString):
+    newRecord = []
     offset = 0
     for i in range(len(maxColSizesList)):
-        #print(registryString[offset:offset+maxColSizesList[i]])
-        newRegistry += [registryString[offset:offset+maxColSizesList[i]].replace(paddingCharacter, "").replace("\n", "")]
+        #print(recordString[offset:offset+maxColSizesList[i]])
+        newRecord += [recordString[offset:offset+maxColSizesList[i]].replace(paddingCharacter, "").replace("\n", "")]
         
         offset+=maxColSizesList[i]
-    return newRegistry
+    return newRecord
 
-#StartingRegistry = index do registro inicial a ser buscado (0-based)
-def fetchBlock(DBFilePath, startingRegistry):
+#StartingRecord = index do registro inicial a ser buscado (0-based)
+def fetchBlock(DBFilePath, startingRecord):
     #posicao de inicio de leitura dos dados
     #TODO
     #cursorBegin = startingR
@@ -139,22 +139,22 @@ def fetchBlock(DBFilePath, startingRegistry):
             #Em termos de BD, seria o análogo à buscar o separador de registros, nesse caso, '\n'
         
         #Em seguida, move o ponteiro do arquivo para a posição correta(offset)
-        for i in range(recordSize*startingRegistry):
+        for i in range(recordSize*startingRecord):
             c = file.read(1) #vamos de 1 em 1 char para não jogar tudo de uma vez na memória
         
         #Após isso, faz um seek no número de blocos até preencher o bloco(ou acabar o arquivo)
         
         for i in range(blockSize):
-            registry = ""
+            record = ""
             for j in range(recordSize):
                 c = file.read(1)
                 #print(c)
                 if c == "": 
                     #print("FIM DO ARQUIVO")
                     return block
-                registry+=c
-            #print("Current registry: "+registry)
-            block += [cleanRegistry(registry)]
+                record+=c
+            #print("Current record: "+record)
+            block += [cleanRecord(record)]
     return block
 
 def deleteLineFromFile(location, filepath):
@@ -169,3 +169,4 @@ def deleteLineFromFile(location, filepath):
             line = line.rstrip()
             # write line in the output file
             print(line)
+        

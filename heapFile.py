@@ -5,8 +5,8 @@ import common as aux
 ######################## DB INITIALIZATION FUNCTIONS ##############################
 ###################################################################################
 
-dbPath = "data_heap.db"
-dbHeaderPath = "data_heap.h"
+dbPath = "data.db"
+dbHeaderPath = "data.h"
 
 #Le o CSV e cria o arquivo do BD de Heap
 def createHeapBD(csvFilePath):
@@ -24,13 +24,13 @@ def createHeapBD(csvFilePath):
     #file.write(aux.MakeHEADString("HEAP"))
     #file.close()
     
-    registryCounter = 0
+    recordCounter = 0
     #inserimos valor a valor com a função de inserção da Heap
     for row in valuesToLoad:
-        HeapInsertSingleRecord(row, checkPrimaryKey=False)
-        registryCounter +=1
+        HeapInsertSingleRecord(row, checkPrimaryKey=False, showSuccessMsg=False)
+        recordCounter +=1
     
-    aux.updateHEADFile(dbHeaderPath, "HEAP", registryCounter)
+    aux.updateHEAD(dbHeaderPath, "HEAP", recordCounter)
     
 
 
@@ -52,7 +52,7 @@ def createHeapBD(csvFilePath):
 #singleRecordSelection = Retorna o PRIMEIRO registro onde 'colName' = à value se True
 def HeapSelectRecord(colName, value, singleRecordSelection = False, valueIsArray = False, secondColName = "", secondValue = "", betweenTwoValues=False):
     numberOfBlocksUsed = 0 #conta o número de vezes que "acessamos a memória do disco"
-    registryFound = False
+    recordFound = False
     endOfFile = False
     
     if betweenTwoValues:
@@ -82,7 +82,8 @@ def HeapSelectRecord(colName, value, singleRecordSelection = False, valueIsArray
     print("\nRunning query: ")
     if singleRecordSelection:
         if valueIsArray:
-            print("\nSELECT * FROM TB_HEAP WHERE " + colName + " in (" + values + ") LIMIT 1;\n\n")
+            secondPrint = "AND " + secondColName + "=" + secondValue + " " if secondValuePresent else ""
+            print("\nSELECT * FROM TB_HEAP WHERE " + colName + " in (" + values + ") " + secondPrint + "LIMIT 1;\n\n")
         else:
             if secondValuePresent:
                 print("\nSELECT * FROM TB_HEAP WHERE " + colName + " = " + value + " AND " + secondColName + "=" + secondValue + " LIMIT 1;\n\n")
@@ -90,17 +91,18 @@ def HeapSelectRecord(colName, value, singleRecordSelection = False, valueIsArray
                 print("\nSELECT * FROM TB_HEAP WHERE " + colName + " = " + value + " LIMIT 1;\n\n")
     else:
         if valueIsArray:
-            print("\nSELECT * FROM TB_HEAP WHERE " + colName + " in (" + values + ");\n\n")
+            secondPrint = " AND " + secondColName + "=" + secondValue if secondValuePresent else ""
+            print("\nSELECT * FROM TB_HEAP WHERE " + colName + " in (" + values + ")" + secondPrint + ";\n\n")
         else:
             if secondValuePresent:
                 print("\nSELECT * FROM TB_HEAP WHERE " + colName + " = " + value + " AND " + secondColName + "=" + secondValue + ";\n\n")
             else:
                 print("\nSELECT * FROM TB_HEAP WHERE " + colName + " = " + value + ";\n\n")
 
-    currentRegistry= 0#busca linear, sempre começamos do primeiro
+    currentRecord= 0#busca linear, sempre começamos do primeiro
     results = []
-    while not (registryFound or endOfFile):
-        currentBlock = aux.fetchBlock(dbPath, currentRegistry)#pega 5 registros a partir do registro atual
+    while not (recordFound or endOfFile):
+        currentBlock = aux.fetchBlock(dbPath, currentRecord)#pega 5 registros a partir do registro atual
         if currentBlock == []:
             endOfFile = True
             break
@@ -111,13 +113,13 @@ def HeapSelectRecord(colName, value, singleRecordSelection = False, valueIsArray
         for i in range(len(currentBlock)):
             if (not valueIsArray and ((not secondValuePresent and currentBlock[i][columnIndex] == value) or (secondValuePresent and currentBlock[i][columnIndex]==value and currentBlock[i][secondColumnIndex]==secondValue) ) ) or (valueIsArray and currentBlock[i][columnIndex] in value):
                 if secondColName!="" and not currentBlock[i][secondColumnIndex]==secondValue: continue
-                print("Result found in registry " + str(currentRegistry+i) + "!")
+                print("Result found in record " + str(currentRecord+i) + "!")
                 results += [currentBlock[i]]
                 if singleRecordSelection:
-                    registryFound = True
+                    recordFound = True
                     break
         #se não é EOF e não encontrou registro, repete operação com outro bloco
-        currentRegistry +=aux.blockSize
+        currentRecord +=aux.blockSize
     
     print("End of search.")
     print("Number of blocks fetched: " + str(numberOfBlocksUsed))
@@ -151,7 +153,7 @@ def HeapSelectRecord(colName, value, singleRecordSelection = False, valueIsArray
 
 
 #insere um valor novo na Heap(ou seja, no final dela)
-def HeapInsertSingleRecord(listOfValues, checkPrimaryKey=True):
+def HeapInsertSingleRecord(listOfValues, checkPrimaryKey=True, showSuccessMsg=True):
     if len(listOfValues) != len(aux.maxColSizesList):
         print("Erro: lista de valores recebidos não tem a mesma quantidade de campos da relação")
         return
@@ -167,8 +169,9 @@ def HeapInsertSingleRecord(listOfValues, checkPrimaryKey=True):
             file.write(aux.padString(listOfValues[i], aux.maxColSizesList[i]))
         #por fim pulamos uma linha para o próximo registro
         file.write("\n")
-    aux.updateHEADFile(dbHeaderPath, "Heap", aux.getNumRegistries(dbHeaderPath, aux.heapHeadSize)+1)
-    print("Registro inserido com sucesso.")
+    aux.updateHEAD(dbHeaderPath, "Heap", aux.queryHEADrecords(dbHeaderPath, aux.heapHeadSize)+1)
+    if showSuccessMsg:
+        print("Registro inserido com sucesso.")
 
 def HeapInsertMultipleRecord(listOfRecords, checkPrimaryKey=True):
     for record in listOfRecords:
@@ -178,15 +181,15 @@ def HeapInsertMultipleRecord(listOfRecords, checkPrimaryKey=True):
 
 def HeapMassInsertCSV(csvFilePath):
     #Lê do CSV e preenche os registros com enchimento para criar o tamanho fixo
-    valuesToLoad = aux.PadRegistries(aux.ReadFromFile(csvFilePath))
+    valuesToLoad = aux.PadRecords(aux.ReadFromFile(csvFilePath))
     
-    registryCounter = aux.getNumRegistries(aux.HeapHeadPath, aux.heapHeadSize)
+    recordCounter = aux.queryHEADrecords(aux.HeapHeadPath, aux.heapHeadSize)
     #inserimos valor a valor com a função de inserção da Heap
     for row in valuesToLoad:
         HeapInsertSingleRecord(row)
-        registryCounter +=1
+        recordCounter +=1
     
-    aux.updateHEADFile(aux.HeapHeadPath, "HEAP", registryCounter)
+    aux.updateHEAD(aux.HeapHeadPath, "HEAP", recordCounter)
 
 
 ###################################################################################
@@ -199,7 +202,7 @@ def HeapMassInsertCSV(csvFilePath):
 #singleRecordDeletion = Retorna o PRIMEIRO registro onde 'colName' = à value se True
 def HeapDeleteRecord(colName, value, singleRecordDeletion = False, valueIsArray = False, secondColName = "", secondValue = ""):
     numberOfBlocksUsed = 0 #conta o número de vezes que "acessamos a memória do disco"
-    registryFound = False
+    recordFound = False
     endOfFile = False
     
     indexesToDelete = []
@@ -244,10 +247,10 @@ def HeapDeleteRecord(colName, value, singleRecordDeletion = False, valueIsArray 
             else:
                 print("\nDELETE FROM TB_HEAP WHERE " + colName + " = " + value + ";\n\n")
 
-    currentRegistry= 0#busca linear, sempre começamos do primeiro
+    currentRecord= 0#busca linear, sempre começamos do primeiro
     results = [] #retornar os deletados
-    while not (registryFound or endOfFile):
-        currentBlock = aux.fetchBlock(dbPath, currentRegistry)#pega 5 registros a partir do registro atual
+    while not (recordFound or endOfFile):
+        currentBlock = aux.fetchBlock(dbPath, currentRecord)#pega 5 registros a partir do registro atual
         if currentBlock == []:
             endOfFile = True
             break
@@ -257,17 +260,17 @@ def HeapDeleteRecord(colName, value, singleRecordDeletion = False, valueIsArray 
                       
         for i in range(len(currentBlock)):
             if (not valueIsArray and ((not secondValuePresent and currentBlock[i][columnIndex] == value) or (secondValuePresent and currentBlock[i][columnIndex]==value and currentBlock[i][secondColumnIndex]==secondValue) ) ) or (valueIsArray and currentBlock[i][columnIndex] in value):
-                print("Result found in registry " + str(currentRegistry+i) + "!")
+                print("Result found in record " + str(currentRecord+i) + "!")
                 results += [currentBlock[i]]
                 #salvar index para deletar posteriormente
-                indexesToDelete+=[currentRegistry+i]
+                indexesToDelete+=[currentRecord+i]
 
                 if singleRecordDeletion:
-                    aux.deleteLineFromFile(currentRegistry+i, dbPath)
-                    registryFound = True
+                    aux.deleteLineFromFile(currentRecord+i, dbPath)
+                    recordFound = True
                     break
         #se não é EOF e não encontrou registro, repete operação com outro bloco
-        currentRegistry +=aux.blockSize
+        currentRecord +=aux.blockSize
         
     if results == []:
         if valueIsArray:
@@ -278,9 +281,10 @@ def HeapDeleteRecord(colName, value, singleRecordDeletion = False, valueIsArray 
     else:
         print(indexesToDelete)
         
-        for reg in reversed(indexesToDelete):
-            aux.deleteLineFromFile(reg, dbPath)
-        print("\n\nRegistries deleted: \n")
+        if not singleRecordDeletion:
+            for reg in reversed(indexesToDelete):
+                aux.deleteLineFromFile(reg, dbPath)
+        print("\n\nRecords deleted: \n")
         for result in results:
             print(result)
             print("\n")
@@ -288,6 +292,6 @@ def HeapDeleteRecord(colName, value, singleRecordDeletion = False, valueIsArray 
     print("End of query.")
     print("Number of blocks fetched: " + str(numberOfBlocksUsed))
 
-    #updateHEAD with new number of registries if there were deletions
+    #updateHEAD with new number of records if there were deletions
     if results != []:
-        aux.updateHEADFile(dbHeaderPath, "Heap", aux.getNumRegistries(dbHeaderPath, aux.heapHeadSize)-len(results))
+        aux.updateHEAD(dbHeaderPath, "Heap", aux.queryHEADrecords(dbHeaderPath, aux.heapHeadSize)-len(results))

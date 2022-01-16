@@ -8,6 +8,7 @@ hashDB.createHashBD(csvFilePath)
 hashDB.hashSelectRecord(["1230"])
 hashDB.hashDeleteRecord(["1230"])
 
+# Heap
 heapDB.createHeapBD(csvFilePath)
 
 ## Função Select
@@ -30,7 +31,7 @@ heapDB.HeapInsertSingleRecord(['3000', 'UFRJ', 'UNIVERSIDADE FEDERAL DO RIO DE J
 
 # Vários registros
 heapDB.HeapInsertMultipleRecord(
-    [['9000', 'UFRJ', 'UNIVERSIDADE FEDERAL DO RIO DE JANEIRO', '91038102022', 'ENGENHARIA DE COMPUTAÇÃO'],
+    [['9100', 'UFRJ', 'UNIVERSIDADE FEDERAL DO RIO DE JANEIRO', '91038102022', 'ENGENHARIA DE COMPUTAÇÃO'],
     ['9200', 'UFRJ', 'UNIVERSIDADE FEDERAL DO RIO DE JANEIRO', '91038102022', 'ENGENHARIA DE COMPUTAÇÃO E INFORMAÇÂO']],
     checkPrimaryKey=False) 
 
