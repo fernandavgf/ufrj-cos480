@@ -5,44 +5,44 @@ import fixedHeapFile as fixedHeapDB
 import variableHeapFile as variableHeapDB
 
 csvFilePath = "input.csv"
-# hashDB.createHashBD(csvFilePath)
-# hashDB.hashSelectRecord(["1230"])
-# hashDB.hashDeleteRecord(["1230"])
+hashDB.createHashBD(csvFilePath)
+hashDB.hashSelectRecord(["1230"])
+hashDB.hashDeleteRecord(["1230"])
 
-# # Fixed Heap
-# fixedHeapDB.createHeapBD(csvFilePath)
+# Fixed Heap
+fixedHeapDB.createHeapBD(csvFilePath)
 
-# ## Função Select
-# # Um registro com chave primária igual a X
-# fixedHeapDB.HeapSelectRecord('COD', '1005', singleRecordSelection=True)
+## Função Select
+# Um registro com chave primária igual a X
+fixedHeapDB.HeapSelectRecord('COD', '1005', singleRecordSelection=True)
 
-# # Todos os registros com campo não sequencial igual a X
-# fixedHeapDB.HeapSelectRecord('COD', ['1004', '1005'], secondColName="SG_ENTIDADE_ENSINO", secondValue="UERJ", valueIsArray=True)
+# Todos os registros com campo não sequencial igual a X
+fixedHeapDB.HeapSelectRecord('COD', ['1004', '1005'], secondColName="SG_ENTIDADE_ENSINO", secondValue="UERJ", valueIsArray=True)
 
-# # Todos os registros com campo chave entre dois valores
-# fixedHeapDB.HeapSelectRecord('COD', ['1002', '1005'], betweenTwoValues=True)
+# Todos os registros com campo chave entre dois valores
+fixedHeapDB.HeapSelectRecord('COD', ['1002', '1005'], betweenTwoValues=True)
 
-# # TOdos os registros com campo não chave igual a X
-# fixedHeapDB.HeapSelectRecord('SG_ENTIDADE_ENSINO', 'UFMG')
+# TOdos os registros com campo não chave igual a X
+fixedHeapDB.HeapSelectRecord('SG_ENTIDADE_ENSINO', 'UFMG')
 
-# ## Função Insert
+## Função Insert
 
-# # Um registro
-# fixedHeapDB.HeapInsertSingleRecord(['3000', 'UFRJ', 'UNIVERSIDADE FEDERAL DO RIO DE JANEIRO', '91038102022', 'ENGENHARIA DE COMPUTACAO']) 
+# Um registro
+fixedHeapDB.HeapInsertSingleRecord(['3000', 'UFRJ', 'UNIVERSIDADE FEDERAL DO RIO DE JANEIRO', '91038102022', 'ENGENHARIA DE COMPUTACAO']) 
 
-# # Vários registros
-# fixedHeapDB.HeapInsertMultipleRecord(
-#     [['9100', 'UFRJ', 'UNIVERSIDADE FEDERAL DO RIO DE JANEIRO', '91038102022', 'ENGENHARIA DE COMPUTACAO'],
-#     ['9200', 'UFRJ', 'UNIVERSIDADE FEDERAL DO RIO DE JANEIRO', '91038102022', 'ENGENHARIA DE COMPUTACAO E INFORMACAO']],
-#     checkPrimaryKey=False) 
+# Vários registros
+fixedHeapDB.HeapInsertMultipleRecord(
+    [['9100', 'UFRJ', 'UNIVERSIDADE FEDERAL DO RIO DE JANEIRO', '91038102022', 'ENGENHARIA DE COMPUTACAO'],
+    ['9200', 'UFRJ', 'UNIVERSIDADE FEDERAL DO RIO DE JANEIRO', '91038102022', 'ENGENHARIA DE COMPUTACAO E INFORMACAO']],
+    checkPrimaryKey=False) 
 
-# ## Função Delete
+## Função Delete
 
-# # Um registro
-# fixedHeapDB.HeapDeleteRecord('COD', '1005', singleRecordDeletion=True)
+# Um registro
+fixedHeapDB.HeapDeleteRecord('COD', '1005', singleRecordDeletion=True)
 
-# # Vários registros
-# fixedHeapDB.HeapDeleteRecord('SG_ENTIDADE_ENSINO', 'UFRJ')
+# Vários registros
+fixedHeapDB.HeapDeleteRecord('SG_ENTIDADE_ENSINO', 'UFRJ')
 
 # Fixed Heap
 variableHeapDB.createHeapBD(csvFilePath)
@@ -74,7 +74,7 @@ variableHeapDB.HeapInsertMultipleRecord(
 ## Função Delete
 
 # Um registro
-variableHeapDB.HeapDeleteRecord('COD', '1005', singleRecordDeletion=True)
+variableHeapDB.HeapDeleteRecord('COD', '1007', singleRecordDeletion=True)
 
 # Vários registros
 variableHeapDB.HeapDeleteRecord('SG_ENTIDADE_ENSINO', 'UFRJ')
