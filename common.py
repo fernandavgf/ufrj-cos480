@@ -78,6 +78,6 @@ def padString(stringToPad, totalSizeOfField):
 
 def padRecords(listOfRecords):
     for i in range(len(listOfRecords)):
-        for j in range(len(listOfRecords[i])-1):
+        for j in range(len(listOfRecords[i])):
             listOfRecords[i][j] = padString(listOfRecords[i][j], maxColSizesList[j])
     return listOfRecords

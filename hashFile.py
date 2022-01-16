@@ -90,10 +90,35 @@ def fetchBlockBytes(hashFile, startOffset):
     hashFile.seek(startOffset)
     return hashFile.read((aux.blockSize * (aux.recordSize -1)))
 
+def createHashBD(csvFilePath):
+
+    #Reads the csv file and create the records to be inserted, with fixed length
+    valuesToLoad = aux.padRecords(aux.readFromFile(csvFilePath))
+    
+    # Delete previous database
+    if os.path.exists(dbPath):
+        os.remove(dbPath)
+    
+    # Create empty file to reserve disk space
+    with open(dbPath, 'wb') as hashFile:
+        hashFile.seek((aux.bucketSize * aux.numberOfBuckets * aux.blockSize * (aux.recordSize -1)) - 1)
+        hashFile.write(b'\0')
+    
+   
+    recordCounter = 0
+    #inserimos valor a valor com a função de inserção do Hash
+    for row in valuesToLoad:
+        record = Record(row, False)
+        hashInsertRecord(record)
+        recordCounter +=1
+
+    # Create HEAD to File
+    aux.makeHEAD(dbHeaderPath, "Hash", recordCounter)
+
 def hashInsertRecord(record):
     freeBlockIndex = -1
     freeSpaceIndex = -1
-
+    
     #calculate hash key and address
     hashKey     = calculateHashKey(record.cod)
     hashAddress = calculateHashAddress(hashKey)
@@ -124,31 +149,54 @@ def hashInsertRecord(record):
         hashFile.seek(startingOffset + (freeBlockIndex * aux.blockSize * (aux.recordSize - 1)))
         hashFile.write(str(currentBlock).encode("utf-8"))
 
-def createHashBD(csvFilePath):
+def hashDeleteRecord(searchKeys):
+    for searchKey in searchKeys:
+        freeBlockIndex = -1
+        blocksVisitedCount = 0
+        #calculate hash key and address
+        hashKey     = calculateHashKey(searchKey)
+        hashAddress = calculateHashAddress(hashKey)
 
-    #Reads the csv file and create the records to be inserted, with fixed length
-    valuesToLoad = aux.padRecords(aux.readFromFile(csvFilePath))
-    
-    # Delete previous database
-    if os.path.exists(dbPath):
-        os.remove(dbPath)
-    
-    # Create empty file to reserve disk space
-    with open(dbPath, 'wb') as hashFile:
-        hashFile.seek((aux.bucketSize * aux.numberOfBuckets * aux.blockSize * (aux.recordSize -1)) - 1)
-        hashFile.write(b'\0')
-    
-   
-    recordCounter = 0
-    #inserimos valor a valor com a função de inserção do Hash
-    for row in valuesToLoad:
-        record = Record(row, False)
-        hashInsertRecord(record)
-        recordCounter +=1
+        # Init the start offset
+        startingOffset = hashAddress * aux.bucketSize * aux.blockSize * (aux.recordSize - 1)
 
-    # Create HEAD to File
-    aux.makeHEAD(dbHeaderPath, "Hash", recordCounter)
+        # Place the record the first block with enough space starting from the file
+        with open(dbPath, 'r+b') as hashFile:
+            while freeBlockIndex == -1:
+                # Load the bucket
+                currentBucket = Bucket(hashFile, startingOffset)
+                freeBlockIndex = currentBucket.firstBlockWithEmptyRecordIndex
+                foundRecord = False
+                # Search for the key in the registries in the bucket
+                for i in range(len(currentBucket.blocksList)):
+                    block = currentBucket.blocksList[i]
+                    blocksVisitedCount += 1
+                    for record in block.recordList:
+                        if (record.cod == searchKey):
+                            record.Clear()
+                            foundRecord = True
+                            # Re-write block to the file
+                            hashFile.seek(startingOffset + (i * aux.blockSize * (aux.recordSize - 1)))
+                            hashFile.write(str(block).encode("utf-8"))
+                            print("Blocks visited for key {}: {}".format(searchKey, blocksVisitedCount))
+                            print("Record deleted")
+                            if (freeBlockIndex == -1):
+                                freeBlockIndex = 0
+                            break
+                    
+                    if (foundRecord):
+                        break
 
+                if (not foundRecord):
+                    # if record was not found and the bucket is full, it may have occured overflow, so we search in the next bucket
+                    if (freeBlockIndex == -1):
+                        startingOffset += aux.bucketSize * aux.blockSize * (aux.recordSize - 1)
+                        pass
+                    # else, print an error and continue
+                    else:
+                        print("Record {} not found".format(searchKey))
+                        print("Blocks visited for key {}: {}".format(searchKey, blocksVisitedCount))
+                        pass
 
 def hashSelectRecord(searchKeys):
     recordList = []
@@ -172,8 +220,8 @@ def hashSelectRecord(searchKeys):
                 for block in currentBucket.blocksList:
                     blocksVisitedCount += 1
                     for record in block.recordList:
-                        if (int(record.cod) == int(searchKey)):
-                            print("Found!")
+                        if (record.cod == searchKey):
+                            print(record)
                             recordList += [record]
                             foundRecord = True
                             print("Blocks visited for key {}: {}".format(searchKey, blocksVisitedCount))
