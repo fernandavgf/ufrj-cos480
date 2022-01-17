@@ -149,7 +149,7 @@ def HeapInsertMultipleRecord(listOfRecords, checkPrimaryKey=True):
 def checkBlankLines(blankLines):
     percBlankLines = len(blankLines)*1.0/(aux.queryHEADrecords(dbHeaderPath, aux.heapHeadSize) + len(blankLines))
     print(blankLines, percBlankLines, len(blankLines))
-    if percBlankLines>0.2 or len(blankLines)>2:
+    if percBlankLines>0.2: # or len(blankLines)>2:
         for reg in sorted(blankLines)[::-1]:
             aux.deleteLineFromFile(reg, dbPath)
         return list()
